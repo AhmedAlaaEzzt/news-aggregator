@@ -1,6 +1,6 @@
 import { IApiError } from '../base.types'
 
-interface IGuardianArticle {
+export interface IGuardianArticle {
   id: string
   type: string
   sectionId: string
@@ -9,6 +9,10 @@ interface IGuardianArticle {
   webTitle: string
   webUrl: string
   apiUrl: string
+  fields?: {
+    trailText?: string
+    thumbnail?: string
+  }
   isHosted: boolean
   pillarId: string
   pillarName: string
@@ -41,4 +45,13 @@ export interface IGuardianApiParams {
   page?: number
   'page-size'?: number
   orderBy?: string
+}
+
+export interface IGuardianParams {
+  q: string
+  'page-size'?: number
+  'order-by'?: string
+  'show-fields'?: string
+  'from-date'?: string
+  'to-date'?: string
 }

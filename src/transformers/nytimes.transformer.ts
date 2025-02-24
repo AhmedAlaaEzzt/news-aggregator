@@ -1,4 +1,5 @@
 import type { INYTimesResponse, IUnifiedNewsItem } from '../types'
+import { mapToUnifiedCategory } from '../utils/categoryMapper'
 
 const NY_TIMES_SOURCE = 'The New York Times'
 const NY_TIMES_IMAGE_BASE_URL = 'https://www.nytimes.com/'
@@ -11,7 +12,7 @@ export const transformNYTimesArticle = (
 ): IUnifiedNewsItem => ({
   id: article._id,
   title: article.headline.main,
-  description: article.abstract,
+  description: article.abstract || article.snippet || '',
   source: NY_TIMES_SOURCE,
   imageUrl:
     article.multimedia?.length > 0
@@ -19,5 +20,5 @@ export const transformNYTimesArticle = (
       : null,
   url: article.web_url,
   publishedAt: article.pub_date,
-  category: article.section_name,
+  category: mapToUnifiedCategory(article.section_name),
 })

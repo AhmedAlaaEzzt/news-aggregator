@@ -1,5 +1,5 @@
 import React from 'react'
-import { NewsSource } from '../types/news'
+import { NewsSource } from '../types/news.types'
 
 interface SourceFilterProps {
   sources: NewsSource[]

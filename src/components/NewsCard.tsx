@@ -1,4 +1,5 @@
 import React from 'react'
+import type { Category } from '../types/news.types'
 
 interface NewsCardProps {
   title: string
@@ -7,6 +8,7 @@ interface NewsCardProps {
   imageUrl?: string
   url: string
   publishedAt: string
+  category?: Category
 }
 
 const NewsCard: React.FC<NewsCardProps> = ({
@@ -16,6 +18,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
   imageUrl,
   url,
   publishedAt,
+  category,
 }) => {
   const formattedDate = new Date(publishedAt).toLocaleDateString('en-GB', {
     day: '2-digit',
@@ -52,6 +55,11 @@ const NewsCard: React.FC<NewsCardProps> = ({
             {title}
           </a>
         </h3>
+        {category && (
+          <span className="w-fit inline-block px-2 py-1 mb-2 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
+            {category.charAt(0).toUpperCase() + category.slice(1)}
+          </span>
+        )}
         <p className="mb-4 text-gray-600 text-sm leading-relaxed line-clamp-3">{description}</p>
         <div className="mt-auto flex justify-between items-center text-sm text-gray-500">
           <span className="font-semibold">{source}</span>

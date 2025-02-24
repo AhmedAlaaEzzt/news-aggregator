@@ -5,6 +5,7 @@ export interface NewsItem {
   imageUrl?: string
   url: string
   publishedAt: string
+  category?: Category
 }
 
 export interface NewsSource {
@@ -12,3 +13,15 @@ export interface NewsSource {
   name: string
   isSelected: boolean
 }
+
+export type Category =
+  | 'general'
+  | 'business'
+  | 'technology'
+  | 'science'
+  | 'health'
+  | 'sports'
+  | 'entertainment'
+  | 'politics'
+  | 'world'
+  | 'other'

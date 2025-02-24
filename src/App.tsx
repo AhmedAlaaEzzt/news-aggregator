@@ -4,11 +4,11 @@ import NewsList from './components/NewsList'
 import SearchBar from './components/SearchBar'
 import SourceFilter from './components/SourceFilter'
 import DateFilter from './components/DateFilter'
+import CategoryFilter from './components/CategoryFilter'
 import { NEWS_SOURCES } from './constants/newsSources'
-import type { NewsItem, NewsSource } from './types/news'
+import type { NewsItem, NewsSource, Category } from './types/news.types'
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState<string>('')
   const [inputQuery, setInputQuery] = useState<string>('')
   const [searchParams, setSearchParams] = useState({
     query: '',
@@ -19,6 +19,7 @@ function App() {
   const [sources, setSources] = useState<NewsSource[]>(NEWS_SOURCES)
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
 
   // Set default dates on component mount
   useEffect(() => {
@@ -33,7 +34,6 @@ function App() {
   }, [])
 
   const handleSearch = () => {
-    setSearchQuery(inputQuery)
     setSearchParams({
       query: inputQuery,
       startDate,
@@ -49,6 +49,10 @@ function App() {
   const handleDateChange = (newStartDate: string, newEndDate: string) => {
     setStartDate(newStartDate)
     setEndDate(newEndDate)
+  }
+
+  const handleCategoryChange = (category: Category | null) => {
+    setSelectedCategory(category)
   }
 
   const {
@@ -71,8 +75,13 @@ function App() {
       imageUrl: article.imageUrl,
       url: article.url,
       publishedAt: article.publishedAt,
+      category: article.category || 'general',
     }))
   }
+
+  const filteredNews = (news ? formatNewsData(news) : []).filter(
+    article => !selectedCategory || article.category === selectedCategory
+  )
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
@@ -95,14 +104,18 @@ function App() {
             </div>
           </div>
 
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow space-y-4">
             <h3 className="text-lg font-medium text-gray-900 mb-3 sm:mb-4">News Sources</h3>
             <SourceFilter sources={sources} onSourceChange={handleSourceChange} />
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+            />
           </div>
 
           <section>
             <NewsList
-              news={news ? formatNewsData(news) : []}
+              news={filteredNews}
               isLoading={isLoading}
               error={error || ''}
               hasSearched={hasSearched}

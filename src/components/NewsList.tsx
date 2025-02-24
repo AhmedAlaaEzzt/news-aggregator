@@ -1,7 +1,7 @@
 import React from 'react'
 import NewsCard from './NewsCard'
 import WarningAlert from './WarningAlert'
-import { NewsItem } from '../types/news'
+import { NewsItem } from '../types/news.types'
 
 interface NewsListProps {
   news: NewsItem[]
@@ -51,6 +51,7 @@ const NewsList: React.FC<NewsListProps> = ({ news, isLoading, error, hasSearched
             imageUrl={newsItem.imageUrl}
             url={newsItem.url}
             publishedAt={newsItem.publishedAt}
+            category={newsItem.category}
           />
         ))}
       </div>

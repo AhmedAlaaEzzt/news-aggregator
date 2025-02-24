@@ -1,4 +1,5 @@
 import type { INewsResponse, IUnifiedNewsItem } from '../types'
+import { mapToUnifiedCategory } from '../utils/categoryMapper'
 
 /**
  * Transforms a NewsAPI article to the unified news item format
@@ -13,4 +14,5 @@ export const transformNewsApiArticle = (
   imageUrl: article.urlToImage,
   url: article.url,
   publishedAt: article.publishedAt,
+  category: mapToUnifiedCategory(article.category),
 })

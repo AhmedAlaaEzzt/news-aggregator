@@ -1,4 +1,5 @@
 import type { IGuardianResponse, IUnifiedNewsItem } from '../types'
+import { mapToUnifiedCategory } from '../utils/categoryMapper'
 
 const GUARDIAN_LOGO = '/src/assets/the-guardian-logo.png'
 
@@ -15,5 +16,5 @@ export const transformGuardianArticle = (
   imageUrl: GUARDIAN_LOGO, // Using The Guardian logo for all Guardian articles
   url: article.webUrl,
   publishedAt: article.webPublicationDate,
-  category: article.sectionName,
+  category: mapToUnifiedCategory(article.sectionId),
 })
