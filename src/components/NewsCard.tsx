@@ -17,7 +17,11 @@ const NewsCard: React.FC<NewsCardProps> = ({
   url,
   publishedAt,
 }) => {
-  const formattedDate = new Date(publishedAt).toLocaleDateString()
+  const formattedDate = new Date(publishedAt).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 
   return (
     <article className="h-full flex flex-col bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-transform duration-200 hover:-translate-y-1">

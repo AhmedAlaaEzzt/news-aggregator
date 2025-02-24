@@ -18,3 +18,14 @@ export type TNewsCategory =
   | 'science'
   | 'sports'
   | 'technology'
+
+export interface IDateFilter {
+  startDate?: string
+  endDate?: string
+}
+
+export interface IUnifiedNewsParams extends IDateFilter {
+  q?: string
+  pageSize?: number
+  language?: string
+}

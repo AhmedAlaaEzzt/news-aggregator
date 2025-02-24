@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { newsService } from '../services/news.service'
 import { guardianService } from '../services/guardian.service'
 import { nytimesService } from '../services/nytimes.service'
-import type { INewsApiParams, IUnifiedNewsItem } from '../types'
+import type { INewsApiParams, IUnifiedNewsItem, IUnifiedNewsParams } from '../types'
 
 // Query keys for caching
 export const newsKeys = {
@@ -12,9 +12,7 @@ export const newsKeys = {
   nytimes: (params: any) => [...newsKeys.all, 'nytimes', params] as const,
 }
 
-interface UnifiedNewsSearchParams {
-  q?: string
-  pageSize?: number
+interface UnifiedNewsSearchParams extends IUnifiedNewsParams {
   enabledSources?: string[]
 }
 
@@ -26,16 +24,22 @@ export function useUnifiedNewsSearch(params: UnifiedNewsSearchParams) {
     q: params.q,
     pageSize: params.pageSize,
     language: 'en',
+    from: params.startDate,
+    to: params.endDate,
   }
 
   const guardianParams = {
     q: params.q,
     'page-size': params.pageSize,
+    'from-date': params.startDate,
+    'to-date': params.endDate,
   }
 
   const nytimesParams = {
     q: params.q,
     page: 0,
+    begin_date: params.startDate?.replace(/-/g, ''),
+    end_date: params.endDate?.replace(/-/g, ''),
   }
 
   const newsApiQuery = useQuery({
