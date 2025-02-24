@@ -6,3 +6,9 @@ export interface NewsItem {
   url: string
   publishedAt: string
 }
+
+export interface NewsSource {
+  id: string
+  name: string
+  isSelected: boolean
+}

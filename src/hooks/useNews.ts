@@ -12,9 +12,19 @@ export const newsKeys = {
   nytimes: (params: any) => [...newsKeys.all, 'nytimes', params] as const,
 }
 
-export function useUnifiedNewsSearch(params: { q?: string; pageSize?: number }) {
+interface UnifiedNewsSearchParams {
+  q?: string
+  pageSize?: number
+  enabledSources?: string[]
+}
+
+export function useUnifiedNewsSearch(params: UnifiedNewsSearchParams) {
+  const { enabledSources = ['newsapi', 'guardian', 'nytimes'] } = params
+
+  // Create search params without enabledSources to prevent unnecessary re-fetches
   const searchParams = {
-    ...params,
+    q: params.q,
+    pageSize: params.pageSize,
     language: 'en',
   }
 
@@ -49,14 +59,20 @@ export function useUnifiedNewsSearch(params: { q?: string; pageSize?: number }) 
     staleTime: 5 * 60 * 1000,
   })
 
-  const isLoading = newsApiQuery.isLoading || guardianQuery.isLoading || nytimesQuery.isLoading
+  const isLoading =
+    (newsApiQuery.isLoading && enabledSources.includes('newsapi')) ||
+    (guardianQuery.isLoading && enabledSources.includes('guardian')) ||
+    (nytimesQuery.isLoading && enabledSources.includes('nytimes'))
 
   // Combine and deduplicate results
   const combinedResults = (): IUnifiedNewsItem[] => {
-    // Get results from successful API calls, use empty array for failed calls
-    const newsApiResults = newsApiQuery.data ?? []
-    const guardianResults = guardianQuery.data ?? []
-    const nytimesResults = nytimesQuery.data ?? []
+    // Only include results from enabled sources
+    const newsApiResults =
+      enabledSources.includes('newsapi') && newsApiQuery.data ? newsApiQuery.data : []
+    const guardianResults =
+      enabledSources.includes('guardian') && guardianQuery.data ? guardianQuery.data : []
+    const nytimesResults =
+      enabledSources.includes('nytimes') && nytimesQuery.data ? nytimesQuery.data : []
 
     // Combine and sort by date
     return [...newsApiResults, ...guardianResults, ...nytimesResults].sort(
@@ -66,9 +82,15 @@ export function useUnifiedNewsSearch(params: { q?: string; pageSize?: number }) 
 
   // Create an array of error messages from failed API calls
   const errors = [
-    newsApiQuery.error && 'NewsAPI: ' + (newsApiQuery.error as Error).message,
-    guardianQuery.error && 'Guardian: ' + (guardianQuery.error as Error).message,
-    nytimesQuery.error && 'NY Times: ' + (nytimesQuery.error as Error).message,
+    newsApiQuery.error &&
+      enabledSources.includes('newsapi') &&
+      'NewsAPI: ' + (newsApiQuery.error as Error).message,
+    guardianQuery.error &&
+      enabledSources.includes('guardian') &&
+      'Guardian: ' + (guardianQuery.error as Error).message,
+    nytimesQuery.error &&
+      enabledSources.includes('nytimes') &&
+      'NY Times: ' + (nytimesQuery.error as Error).message,
   ].filter(Boolean)
 
   return {

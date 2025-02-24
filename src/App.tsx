@@ -1,21 +1,23 @@
 import { useState } from 'react'
 import { useUnifiedNewsSearch } from './hooks/useNews'
 import NewsList from './components/NewsList'
-import { NewsItem } from './components/NewsList'
+import SearchBar from './components/SearchBar'
+import SourceFilter from './components/SourceFilter'
+import { NEWS_SOURCES } from './constants/newsSources'
+import type { NewsItem, NewsSource } from './types/news'
 
 function App() {
-  const [inputQuery, setInputQuery] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [hasSearched, setHasSearched] = useState<boolean>(false)
+  const [sources, setSources] = useState<NewsSource[]>(NEWS_SOURCES)
 
-  const handleSearch = () => {
-    if (inputQuery.trim()) {
-      setSearchQuery(inputQuery)
-      setHasSearched(true)
-    } else {
-      setSearchQuery('')
-      setHasSearched(false)
-    }
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    setHasSearched(!!query)
+  }
+
+  const handleSourceChange = (updatedSources: NewsSource[]) => {
+    setSources(updatedSources)
   }
 
   const {
@@ -25,6 +27,7 @@ function App() {
   } = useUnifiedNewsSearch({
     q: searchQuery,
     pageSize: 10,
+    enabledSources: sources.filter(s => s.isSelected).map(s => s.id),
   })
 
   const formatNewsData = (articles: any[]): NewsItem[] => {
@@ -43,26 +46,8 @@ function App() {
       <div className="container mx-auto px-4 max-w-7xl">
         <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">News Aggregator</h1>
 
-        <div className="mb-6 max-w-2xl mx-auto flex gap-2">
-          <input
-            type="text"
-            value={inputQuery}
-            onChange={e => setInputQuery(e.target.value)}
-            placeholder="Search news..."
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                handleSearch()
-              }
-            }}
-          />
-          <button
-            onClick={handleSearch}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-          >
-            Search
-          </button>
-        </div>
+        <SearchBar onSearch={handleSearch} />
+        <SourceFilter sources={sources} onSourceChange={handleSourceChange} />
 
         <section>
           <NewsList
