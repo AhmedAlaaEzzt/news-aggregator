@@ -18,6 +18,9 @@ export type TNewsCategory =
   | 'science'
   | 'sports'
   | 'technology'
+  | 'politics'
+  | 'world'
+  | 'other'
 
 export interface IDateFilter {
   startDate?: string

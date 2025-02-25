@@ -1,3 +1,5 @@
+import { TNewsCategory } from './unified.types'
+
 export interface INewsItem {
   title: string
   description: string
@@ -5,7 +7,7 @@ export interface INewsItem {
   imageUrl?: string
   url: string
   publishedAt: string
-  category?: TCategory
+  category?: TNewsCategory
 }
 
 // Api News Source ex: newsApi, guardian, nyTimes
@@ -14,15 +16,3 @@ export interface INewsSource {
   name: string
   isSelected: boolean
 }
-
-export type TCategory =
-  | 'general'
-  | 'business'
-  | 'technology'
-  | 'science'
-  | 'health'
-  | 'sports'
-  | 'entertainment'
-  | 'politics'
-  | 'world'
-  | 'other'

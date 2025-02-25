@@ -1,6 +1,6 @@
-import { TCategory } from './news.types'
+import { TNewsCategory } from './unified.types'
 
 export interface IUserPreferences {
-  favoriteCategories: TCategory[]
+  favoriteCategories: TNewsCategory[]
   favoriteSources: string[]
 }
