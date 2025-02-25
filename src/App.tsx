@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useUnifiedNewsSearch } from './hooks/useNews'
 import { NEWS_SOURCES } from './constants/newsSources'
-import { NewsItem, INewsSource, TCategory } from './types/news.types'
+import { INewsItem, INewsSource, TCategory } from './types/news.types'
+import { DEFAULT_PAGE_SIZE, DEFAULT_LOOKBACK_DAYS } from './constants/config'
 
 // Components
 import NewsList from './components/NewsList'
@@ -10,9 +11,7 @@ import SearchSection from './components/SearchSection'
 import FiltersSection from './components/FiltersSection'
 import PersonalizationPopup from './components/PersonalizationPopup'
 import { IUserPreferences } from './types/userPreferences.types'
-
-const DEFAULT_PAGE_SIZE = 10
-const DEFAULT_LOOKBACK_DAYS = 1
+import { IUnifiedNewsItem } from './types'
 
 function App() {
   // This state is used to manage the personalization popup
@@ -114,17 +113,7 @@ function App() {
     endDate: searchParams.endDate,
   })
 
-  const formatNewsData = (
-    articles: Array<{
-      title: string
-      description: string | null
-      source: string
-      imageUrl: string | null
-      url: string
-      publishedAt: string
-      category?: string
-    }>
-  ): NewsItem[] => {
+  const formatNewsData = (articles: Array<IUnifiedNewsItem>): INewsItem[] => {
     return articles.map(article => ({
       title: article.title,
       description: article.description || '',

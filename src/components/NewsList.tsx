@@ -1,10 +1,10 @@
 import React from 'react'
 import NewsCard from './NewsCard'
 import WarningAlert from './WarningAlert'
-import { NewsItem } from '../types/news.types'
+import { INewsItem } from '../types/news.types'
 
 interface NewsListProps {
-  news: NewsItem[]
+  news: INewsItem[]
   isLoading?: boolean
   error?: string
   hasSearched: boolean
