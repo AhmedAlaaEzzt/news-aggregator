@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useUnifiedNewsSearch } from './hooks/useNews'
 import { NEWS_SOURCES } from './constants/newsSources'
 import { NewsItem, INewsSource, TCategory } from './types/news.types'
@@ -10,6 +10,9 @@ import SearchSection from './components/SearchSection'
 import FiltersSection from './components/FiltersSection'
 import PersonalizationPopup from './components/PersonalizationPopup'
 import { IUserPreferences } from './types/userPreferences.types'
+
+const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_LOOKBACK_DAYS = 1
 
 function App() {
   // This state is used to manage the personalization popup
@@ -57,7 +60,7 @@ function App() {
   useEffect(() => {
     const today = new Date()
     const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    yesterday.setDate(yesterday.getDate() - DEFAULT_LOOKBACK_DAYS)
 
     const formatDate = (date: Date) => date.toISOString().split('T')[0]
 
@@ -105,28 +108,42 @@ function App() {
     error,
   } = useUnifiedNewsSearch({
     q: searchParams.query,
-    pageSize: 10,
+    pageSize: DEFAULT_PAGE_SIZE,
     enabledSources: newsSources.filter(s => s.isSelected).map(s => s.id),
     startDate: searchParams.startDate,
     endDate: searchParams.endDate,
   })
 
-  const formatNewsData = (articles: any[]): NewsItem[] => {
+  const formatNewsData = (
+    articles: Array<{
+      title: string
+      description: string | null
+      source: string
+      imageUrl: string | null
+      url: string
+      publishedAt: string
+      category?: string
+    }>
+  ): NewsItem[] => {
     return articles.map(article => ({
       title: article.title,
       description: article.description || '',
       source: article.source,
-      imageUrl: article.imageUrl,
+      imageUrl: article.imageUrl || undefined,
       url: article.url,
       publishedAt: article.publishedAt,
-      category: article.category || 'general',
+      category: (article.category || 'general') as TCategory,
     }))
   }
 
-  const filteredNews = (unifiedNews ? formatNewsData(unifiedNews) : []).filter(article =>
-    selectedCategories.length === 0
-      ? true
-      : selectedCategories.includes(article.category || 'general')
+  const filteredNews = useMemo(
+    () =>
+      (unifiedNews ? formatNewsData(unifiedNews) : []).filter(article =>
+        selectedCategories.length === 0
+          ? true
+          : selectedCategories.includes(article.category || 'general')
+      ),
+    [unifiedNews, selectedCategories]
   )
 
   return (
