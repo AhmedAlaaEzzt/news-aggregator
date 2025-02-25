@@ -1,6 +1,6 @@
-import { Category } from '../types/news.types'
+import { TNewsCategory } from '../types'
 
-const categoryMappings: Record<string, Category> = {
+const categoryMappings: Record<string, TNewsCategory> = {
   // NewsAPI categories
   general: 'general',
   business: 'business',
@@ -31,7 +31,7 @@ const categoryMappings: Record<string, Category> = {
   Arts: 'entertainment',
 }
 
-export const mapToUnifiedCategory = (sourceCategory: string | undefined): Category => {
+export const mapToUnifiedCategory = (sourceCategory: string | undefined): TNewsCategory => {
   if (!sourceCategory) return 'general'
 
   // Try to find an exact match

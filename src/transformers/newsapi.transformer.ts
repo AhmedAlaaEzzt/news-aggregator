@@ -14,5 +14,5 @@ export const transformNewsApiArticle = (
   imageUrl: article.urlToImage,
   url: article.url,
   publishedAt: article.publishedAt,
-  category: mapToUnifiedCategory(article.category),
+  category: mapToUnifiedCategory(undefined),
 })

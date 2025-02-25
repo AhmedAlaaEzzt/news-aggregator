@@ -1,7 +1,7 @@
 import type { IGuardianResponse, IUnifiedNewsItem } from '../types'
 import { mapToUnifiedCategory } from '../utils/categoryMapper'
 
-const GUARDIAN_LOGO = '/src/assets/the-guardian-logo.png'
+const GUARDIAN_LOGO = new URL('../assets/the-guardian-logo.png', import.meta.url).href
 
 /**
  * Transforms a Guardian API article to the unified news item format

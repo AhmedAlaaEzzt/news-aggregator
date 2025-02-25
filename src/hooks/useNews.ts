@@ -2,14 +2,20 @@ import { useQuery } from '@tanstack/react-query'
 import { newsService } from '../services/news.service'
 import { guardianService } from '../services/guardian.service'
 import { nytimesService } from '../services/nytimes.service'
-import type { INewsApiParams, IUnifiedNewsItem, IUnifiedNewsParams } from '../types'
+import type {
+  INewsApiParams,
+  IUnifiedNewsItem,
+  IUnifiedNewsParams,
+  IGuardianApiParams,
+  INYTimesApiParams,
+} from '../types'
 
 // Query keys for caching
 export const newsKeys = {
   all: ['news'] as const,
   search: (params: INewsApiParams) => [...newsKeys.all, 'search', params] as const,
-  guardian: (params: any) => [...newsKeys.all, 'guardian', params] as const,
-  nytimes: (params: any) => [...newsKeys.all, 'nytimes', params] as const,
+  guardian: (params: IGuardianApiParams) => [...newsKeys.all, 'guardian', params] as const,
+  nytimes: (params: INYTimesApiParams) => [...newsKeys.all, 'nytimes', params] as const,
 }
 
 interface UnifiedNewsSearchParams extends IUnifiedNewsParams {

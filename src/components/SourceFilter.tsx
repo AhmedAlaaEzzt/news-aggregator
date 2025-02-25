@@ -1,13 +1,13 @@
 import React from 'react'
-import { NewsSource } from '../types/news.types'
+import { INewsSource } from '../types'
 
 interface SourceFilterProps {
-  sources: NewsSource[]
-  onSourceChange: (sources: NewsSource[]) => void
+  sources: INewsSource[]
+  onSourceChange: (sources: INewsSource[]) => void
 }
 
 const SourceFilter: React.FC<SourceFilterProps> = ({ sources, onSourceChange }) => {
-  const handleSourceToggle = (toggledSource: NewsSource) => {
+  const handleSourceToggle = (toggledSource: INewsSource) => {
     const updatedSources = sources.map(source =>
       source.id === toggledSource.id ? { ...source, isSelected: !source.isSelected } : source
     )

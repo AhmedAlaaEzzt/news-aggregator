@@ -1,17 +1,16 @@
 import React from 'react'
-import type { Category } from '../types/news.types'
-
-interface NewsCardProps {
+import { TNewsCategory } from '../types'
+interface INewsCardProps {
   title: string
   description: string
   source: string
   imageUrl?: string
   url: string
   publishedAt: string
-  category?: Category
+  category?: TNewsCategory
 }
 
-const NewsCard: React.FC<NewsCardProps> = ({
+const NewsCard: React.FC<INewsCardProps> = ({
   title,
   description,
   source,
@@ -20,11 +19,17 @@ const NewsCard: React.FC<NewsCardProps> = ({
   publishedAt,
   category,
 }) => {
-  const formattedDate = new Date(publishedAt).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+  const formattedDate = React.useMemo(() => {
+    try {
+      return new Date(publishedAt).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    } catch {
+      return 'Invalid date'
+    }
+  }, [publishedAt])
 
   return (
     <article className="h-full flex flex-col bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-transform duration-200 hover:-translate-y-1">

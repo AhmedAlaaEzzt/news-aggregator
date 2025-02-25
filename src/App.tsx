@@ -1,37 +1,51 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useUnifiedNewsSearch } from './hooks/useNews'
-import NewsList from './components/NewsList'
-import SearchBar from './components/SearchBar'
-import SourceFilter from './components/SourceFilter'
-import DateFilter from './components/DateFilter'
-import CategoryFilter from './components/CategoryFilter'
-import PersonalizationPopup, { UserPreferences } from './components/PersonalizationPopup'
 import { NEWS_SOURCES } from './constants/newsSources'
-import type { NewsItem, NewsSource, Category } from './types/news.types'
+import { INewsItem, INewsSource, TNewsCategory } from './types'
+import { DEFAULT_PAGE_SIZE, DEFAULT_LOOKBACK_DAYS } from './constants/config'
+
+// Components
+import NewsList from './components/NewsList'
+import Header from './components/Header'
+import SearchSection from './components/SearchSection'
+import FiltersSection from './components/FiltersSection'
+import PersonalizationPopup from './components/PersonalizationPopup'
+import { IUnifiedNewsItem, IUserPreferences } from './types'
 
 function App() {
+  // This state is used to manage the personalization popup
+  const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false)
+
+  // **** Search Section ****
+  // [inputQuery state] This state is used to store the user's entered search query
   const [inputQuery, setInputQuery] = useState<string>('')
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  /* [hasSearched state] we check if the user has searched for news 
+    if no we show a message to the user that he should search for news */
+  const [hasSearched, setHasSearched] = useState<boolean>(false)
+  /* [searchParams state] through this state we pass the search for call the apis 
+    through the useUnifiedNewsSearch hook
+  */
   const [searchParams, setSearchParams] = useState({
     query: '',
     startDate: '',
     endDate: '',
   })
-  const [hasSearched, setHasSearched] = useState<boolean>(false)
-  const [sources, setSources] = useState<NewsSource[]>(NEWS_SOURCES)
-  const [startDate, setStartDate] = useState<string>('')
-  const [endDate, setEndDate] = useState<string>('')
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
-  const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false)
 
-  // Load saved preferences on initial mount
+  // **** Filters Section ****
+  const [newsSources, setNewsSources] = useState<INewsSource[]>(NEWS_SOURCES)
+  const [selectedCategories, setSelectedCategories] = useState<TNewsCategory[]>([])
+
+  // Load saved preferences on initial mount if exists
   useEffect(() => {
     const savedPreferences = localStorage.getItem('userNewsPreferences')
     if (savedPreferences) {
       const { favoriteCategories, favoriteSources } = JSON.parse(
         savedPreferences
-      ) as UserPreferences
+      ) as IUserPreferences
       setSelectedCategories(favoriteCategories)
-      setSources(prev =>
+      setNewsSources(prev =>
         prev.map(source => ({
           ...source,
           isSelected: favoriteSources.includes(source.id),
@@ -44,7 +58,7 @@ function App() {
   useEffect(() => {
     const today = new Date()
     const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    yesterday.setDate(yesterday.getDate() - DEFAULT_LOOKBACK_DAYS)
 
     const formatDate = (date: Date) => date.toISOString().split('T')[0]
 
@@ -58,12 +72,13 @@ function App() {
       startDate,
       endDate,
     })
+    /* !! operator is used to convert the inputQuery to a boolean 
+      if the inputQuery is empty it will return false and if it is not empty it will return true */
     setHasSearched(!!inputQuery)
   }
 
-  const handleSourceChange = (updatedSources: NewsSource[]) => {
-    setSources(updatedSources)
-    // Don't save to localStorage when changing filters manually
+  const handleSourceChange = (updatedSources: INewsSource[]) => {
+    setNewsSources(updatedSources)
   }
 
   const handleDateChange = (newStartDate: string, newEndDate: string) => {
@@ -71,89 +86,75 @@ function App() {
     setEndDate(newEndDate)
   }
 
-  const handleCategoryChange = (categories: Category[]) => {
+  const handleCategoryChange = (categories: TNewsCategory[]) => {
     setSelectedCategories(categories)
-    // Don't save to localStorage when changing filters manually
   }
 
-  const handleSavePreferences = (preferences: UserPreferences) => {
-    // Update sources based on favorite sources
-    setSources(prev =>
-      prev.map(source => ({
-        ...source,
-        isSelected: preferences.favoriteSources.includes(source.id),
+  const handleSavePreferences = (preferences: IUserPreferences) => {
+    setNewsSources(prev =>
+      prev.map(newsSource => ({
+        ...newsSource,
+        isSelected: preferences.favoriteSources.includes(newsSource.id),
       }))
     )
-    // Update selected categories from preferences
     setSelectedCategories(preferences.favoriteCategories)
-    // Preferences are already saved to localStorage in the PersonalizationPopup component
   }
 
   const {
-    data: news,
+    data: unifiedNews,
     isLoading,
     error,
   } = useUnifiedNewsSearch({
     q: searchParams.query,
-    pageSize: 10,
-    enabledSources: sources.filter(s => s.isSelected).map(s => s.id),
+    pageSize: DEFAULT_PAGE_SIZE,
+    enabledSources: newsSources.filter(s => s.isSelected).map(s => s.id),
     startDate: searchParams.startDate,
     endDate: searchParams.endDate,
   })
 
-  const formatNewsData = (articles: any[]): NewsItem[] => {
+  const formatNewsData = (articles: Array<IUnifiedNewsItem>): INewsItem[] => {
     return articles.map(article => ({
       title: article.title,
       description: article.description || '',
       source: article.source,
-      imageUrl: article.imageUrl,
+      imageUrl: article.imageUrl || undefined,
       url: article.url,
       publishedAt: article.publishedAt,
-      category: article.category || 'general',
+      category: (article.category || 'general') as TNewsCategory,
     }))
   }
 
-  const filteredNews = (news ? formatNewsData(news) : []).filter(article =>
-    selectedCategories.length === 0
-      ? true
-      : selectedCategories.includes(article.category || 'general')
+  const filteredNews = useMemo(
+    () =>
+      (unifiedNews ? formatNewsData(unifiedNews) : []).filter(article =>
+        selectedCategories.length === 0
+          ? true
+          : selectedCategories.includes(article.category || 'general')
+      ),
+    [unifiedNews, selectedCategories]
   )
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
       <div className="container mx-auto px-3 sm:px-4 max-w-7xl">
-        <div className="flex justify-between items-center mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">News Aggregator</h1>
-          <button
-            onClick={() => setIsPersonalizationOpen(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-          >
-            Personalize
-          </button>
-        </div>
+        <Header onPersonalize={() => setIsPersonalizationOpen(true)} />
 
         <div className="space-y-4 sm:space-y-6">
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow space-y-4">
-            <SearchBar value={inputQuery} onChange={setInputQuery} onSearch={handleSearch} />
-            <DateFilter startDate={startDate} endDate={endDate} onDateChange={handleDateChange} />
-            <div className="w-full">
-              <button
-                onClick={handleSearch}
-                className="w-full px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 font-medium"
-              >
-                Search News
-              </button>
-            </div>
-          </div>
+          <SearchSection
+            searchQuery={inputQuery}
+            onSearchQueryChange={setInputQuery}
+            onSearch={handleSearch}
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={handleDateChange}
+          />
 
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-3 sm:mb-4">News Sources</h3>
-            <SourceFilter sources={sources} onSourceChange={handleSourceChange} />
-            <CategoryFilter
-              selectedCategories={selectedCategories}
-              onCategoryChange={handleCategoryChange}
-            />
-          </div>
+          <FiltersSection
+            sources={newsSources}
+            selectedCategories={selectedCategories}
+            onSourceChange={handleSourceChange}
+            onCategoryChange={handleCategoryChange}
+          />
 
           <section>
             <NewsList
@@ -169,7 +170,7 @@ function App() {
       <PersonalizationPopup
         isOpen={isPersonalizationOpen}
         onClose={() => setIsPersonalizationOpen(false)}
-        sources={sources}
+        sources={newsSources}
         onSavePreferences={handleSavePreferences}
       />
     </div>
