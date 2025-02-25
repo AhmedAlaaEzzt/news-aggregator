@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Category } from '../types/news.types'
+import type { TCategory } from '../types/news.types'
 
 interface NewsCardProps {
   title: string
@@ -8,7 +8,7 @@ interface NewsCardProps {
   imageUrl?: string
   url: string
   publishedAt: string
-  category?: Category
+  category?: TCategory
 }
 
 const NewsCard: React.FC<NewsCardProps> = ({

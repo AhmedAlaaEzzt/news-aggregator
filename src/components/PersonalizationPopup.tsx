@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react'
-import type { Category, NewsSource } from '../types/news.types'
+import type { TCategory, INewsSource } from '../types/news.types'
+import { IUserPreferences } from '../types/userPreferences.types'
 
 interface PersonalizationPopupProps {
   isOpen: boolean
   onClose: () => void
-  sources: NewsSource[]
-  onSavePreferences: (preferences: UserPreferences) => void
-}
-
-export interface UserPreferences {
-  favoriteCategories: Category[]
-  favoriteSources: string[]
+  sources: INewsSource[]
+  onSavePreferences: (preferences: IUserPreferences) => void
 }
 
 const PersonalizationPopup = ({
@@ -19,7 +15,7 @@ const PersonalizationPopup = ({
   sources,
   onSavePreferences,
 }: PersonalizationPopupProps) => {
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<TCategory[]>([])
   const [selectedSources, setSelectedSources] = useState<string[]>([])
 
   useEffect(() => {
@@ -38,7 +34,7 @@ const PersonalizationPopup = ({
     }
   }, [isOpen]) // Only depend on isOpen, not on current filter state
 
-  const categories: Category[] = [
+  const categories: TCategory[] = [
     'general',
     'business',
     'technology',
@@ -51,7 +47,7 @@ const PersonalizationPopup = ({
   ]
 
   const handleSave = () => {
-    const preferences: UserPreferences = {
+    const preferences: IUserPreferences = {
       favoriteCategories: selectedCategories,
       favoriteSources: selectedSources,
     }
@@ -60,7 +56,7 @@ const PersonalizationPopup = ({
     onClose()
   }
 
-  const toggleCategory = (category: Category) => {
+  const toggleCategory = (category: TCategory) => {
     setSelectedCategories(prev =>
       prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
     )

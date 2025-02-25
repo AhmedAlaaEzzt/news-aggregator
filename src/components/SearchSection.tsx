@@ -8,7 +8,6 @@ interface SearchSectionProps {
   startDate: string
   endDate: string
   onDateChange: (startDate: string, endDate: string) => void
-  isValid?: boolean
 }
 
 const SearchSection = ({
@@ -18,8 +17,8 @@ const SearchSection = ({
   startDate,
   endDate,
   onDateChange,
-  isValid,
 }: SearchSectionProps) => {
+  const isValid = searchQuery.trim().length > 0
   return (
     <div className="bg-white p-4 sm:p-6 rounded-lg shadow space-y-4">
       <SearchBar

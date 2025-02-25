@@ -5,16 +5,17 @@ export interface NewsItem {
   imageUrl?: string
   url: string
   publishedAt: string
-  category?: Category
+  category?: TCategory
 }
 
-export interface NewsSource {
+// Api News Source ex: newsApi, guardian, nyTimes
+export interface INewsSource {
   id: string
   name: string
   isSelected: boolean
 }
 
-export type Category =
+export type TCategory =
   | 'general'
   | 'business'
   | 'technology'

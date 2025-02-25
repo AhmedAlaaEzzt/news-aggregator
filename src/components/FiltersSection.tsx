@@ -1,12 +1,12 @@
 import SourceFilter from './SourceFilter'
 import CategoryFilter from './CategoryFilter'
-import type { NewsSource, Category } from '../types/news.types'
+import type { INewsSource, TCategory } from '../types/news.types'
 
 interface FiltersSectionProps {
-  sources: NewsSource[]
-  selectedCategories: Category[]
-  onSourceChange: (sources: NewsSource[]) => void
-  onCategoryChange: (categories: Category[]) => void
+  sources: INewsSource[]
+  selectedCategories: TCategory[]
+  onSourceChange: (sources: INewsSource[]) => void
+  onCategoryChange: (categories: TCategory[]) => void
 }
 
 const FiltersSection = ({

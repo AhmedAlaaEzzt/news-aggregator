@@ -1,6 +1,6 @@
-import { Category } from '../types/news.types'
+import { TCategory } from '../types/news.types'
 
-const CATEGORIES: Category[] = [
+const CATEGORIES: TCategory[] = [
   'general',
   'business',
   'technology',
@@ -13,15 +13,15 @@ const CATEGORIES: Category[] = [
 ]
 
 interface CategoryFilterProps {
-  selectedCategories: Category[]
-  onCategoryChange: (categories: Category[]) => void
+  selectedCategories: TCategory[]
+  onCategoryChange: (categories: TCategory[]) => void
 }
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({
   selectedCategories,
   onCategoryChange,
 }) => {
-  const toggleCategory = (category: Category) => {
+  const toggleCategory = (category: TCategory) => {
     if (selectedCategories.includes(category)) {
       onCategoryChange(selectedCategories.filter(c => c !== category))
     } else {
