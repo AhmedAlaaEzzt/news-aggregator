@@ -1,6 +1,6 @@
-import type { NewsSource } from '../types/news.types'
+import type { INewsSource } from '../types/news.types'
 
-export const NEWS_SOURCES: NewsSource[] = [
+export const NEWS_SOURCES: INewsSource[] = [
   {
     id: 'newsapi',
     name: 'News API',

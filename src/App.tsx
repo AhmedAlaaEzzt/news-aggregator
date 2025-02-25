@@ -1,38 +1,52 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useUnifiedNewsSearch } from './hooks/useNews'
 import { NEWS_SOURCES } from './constants/newsSources'
-import type { NewsItem, NewsSource, Category } from './types/news.types'
+import { INewsItem, INewsSource, TCategory } from './types/news.types'
+import { DEFAULT_PAGE_SIZE, DEFAULT_LOOKBACK_DAYS } from './constants/config'
 
 // Components
 import NewsList from './components/NewsList'
 import Header from './components/Header'
 import SearchSection from './components/SearchSection'
 import FiltersSection from './components/FiltersSection'
-import PersonalizationPopup, { UserPreferences } from './components/PersonalizationPopup'
+import PersonalizationPopup from './components/PersonalizationPopup'
+import { IUserPreferences } from './types/userPreferences.types'
+import { IUnifiedNewsItem } from './types'
 
 function App() {
+  // This state is used to manage the personalization popup
+  const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false)
+
+  // **** Search Section ****
+  // [inputQuery state] This state is used to store the user's entered search query
   const [inputQuery, setInputQuery] = useState<string>('')
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  /* [hasSearched state] we check if the user has searched for news 
+    if no we show a message to the user that he should search for news */
+  const [hasSearched, setHasSearched] = useState<boolean>(false)
+  /* [searchParams state] through this state we pass the search for call the apis 
+    through the useUnifiedNewsSearch hook
+  */
   const [searchParams, setSearchParams] = useState({
     query: '',
     startDate: '',
     endDate: '',
   })
-  const [hasSearched, setHasSearched] = useState<boolean>(false)
-  const [sources, setSources] = useState<NewsSource[]>(NEWS_SOURCES)
-  const [startDate, setStartDate] = useState<string>('')
-  const [endDate, setEndDate] = useState<string>('')
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
-  const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false)
 
-  // Load saved preferences on initial mount
+  // **** Filters Section ****
+  const [newsSources, setNewsSources] = useState<INewsSource[]>(NEWS_SOURCES)
+  const [selectedCategories, setSelectedCategories] = useState<TCategory[]>([])
+
+  // Load saved preferences on initial mount if exists
   useEffect(() => {
     const savedPreferences = localStorage.getItem('userNewsPreferences')
     if (savedPreferences) {
       const { favoriteCategories, favoriteSources } = JSON.parse(
         savedPreferences
-      ) as UserPreferences
+      ) as IUserPreferences
       setSelectedCategories(favoriteCategories)
-      setSources(prev =>
+      setNewsSources(prev =>
         prev.map(source => ({
           ...source,
           isSelected: favoriteSources.includes(source.id),
@@ -45,7 +59,7 @@ function App() {
   useEffect(() => {
     const today = new Date()
     const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    yesterday.setDate(yesterday.getDate() - DEFAULT_LOOKBACK_DAYS)
 
     const formatDate = (date: Date) => date.toISOString().split('T')[0]
 
@@ -59,11 +73,13 @@ function App() {
       startDate,
       endDate,
     })
+    /* !! operator is used to convert the inputQuery to a boolean 
+      if the inputQuery is empty it will return false and if it is not empty it will return true */
     setHasSearched(!!inputQuery)
   }
 
-  const handleSourceChange = (updatedSources: NewsSource[]) => {
-    setSources(updatedSources)
+  const handleSourceChange = (updatedSources: INewsSource[]) => {
+    setNewsSources(updatedSources)
   }
 
   const handleDateChange = (newStartDate: string, newEndDate: string) => {
@@ -71,51 +87,53 @@ function App() {
     setEndDate(newEndDate)
   }
 
-  const handleCategoryChange = (categories: Category[]) => {
+  const handleCategoryChange = (categories: TCategory[]) => {
     setSelectedCategories(categories)
   }
 
-  const handleSavePreferences = (preferences: UserPreferences) => {
-    setSources(prev =>
-      prev.map(source => ({
-        ...source,
-        isSelected: preferences.favoriteSources.includes(source.id),
+  const handleSavePreferences = (preferences: IUserPreferences) => {
+    setNewsSources(prev =>
+      prev.map(newsSource => ({
+        ...newsSource,
+        isSelected: preferences.favoriteSources.includes(newsSource.id),
       }))
     )
     setSelectedCategories(preferences.favoriteCategories)
   }
 
   const {
-    data: news,
+    data: unifiedNews,
     isLoading,
     error,
   } = useUnifiedNewsSearch({
     q: searchParams.query,
-    pageSize: 10,
-    enabledSources: sources.filter(s => s.isSelected).map(s => s.id),
+    pageSize: DEFAULT_PAGE_SIZE,
+    enabledSources: newsSources.filter(s => s.isSelected).map(s => s.id),
     startDate: searchParams.startDate,
     endDate: searchParams.endDate,
   })
 
-  const formatNewsData = (articles: any[]): NewsItem[] => {
+  const formatNewsData = (articles: Array<IUnifiedNewsItem>): INewsItem[] => {
     return articles.map(article => ({
       title: article.title,
       description: article.description || '',
       source: article.source,
-      imageUrl: article.imageUrl,
+      imageUrl: article.imageUrl || undefined,
       url: article.url,
       publishedAt: article.publishedAt,
-      category: article.category || 'general',
+      category: (article.category || 'general') as TCategory,
     }))
   }
 
-  const filteredNews = (news ? formatNewsData(news) : []).filter(article =>
-    selectedCategories.length === 0
-      ? true
-      : selectedCategories.includes(article.category || 'general')
+  const filteredNews = useMemo(
+    () =>
+      (unifiedNews ? formatNewsData(unifiedNews) : []).filter(article =>
+        selectedCategories.length === 0
+          ? true
+          : selectedCategories.includes(article.category || 'general')
+      ),
+    [unifiedNews, selectedCategories]
   )
-
-  const isValidSearch = inputQuery.trim().length > 0
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
@@ -130,11 +148,10 @@ function App() {
             startDate={startDate}
             endDate={endDate}
             onDateChange={handleDateChange}
-            isValid={isValidSearch}
           />
 
           <FiltersSection
-            sources={sources}
+            sources={newsSources}
             selectedCategories={selectedCategories}
             onSourceChange={handleSourceChange}
             onCategoryChange={handleCategoryChange}
@@ -154,7 +171,7 @@ function App() {
       <PersonalizationPopup
         isOpen={isPersonalizationOpen}
         onClose={() => setIsPersonalizationOpen(false)}
-        sources={sources}
+        sources={newsSources}
         onSavePreferences={handleSavePreferences}
       />
     </div>

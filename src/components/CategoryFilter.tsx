@@ -1,27 +1,17 @@
-import { Category } from '../types/news.types'
+import React from 'react'
+import { TNewsCategory } from '../types'
+import { CATEGORIES } from '../constants/newsCategories'
 
-const CATEGORIES: Category[] = [
-  'general',
-  'business',
-  'technology',
-  'science',
-  'health',
-  'sports',
-  'entertainment',
-  'politics',
-  'world',
-]
-
-interface CategoryFilterProps {
-  selectedCategories: Category[]
-  onCategoryChange: (categories: Category[]) => void
+interface ICategoryFilterProps {
+  selectedCategories: TNewsCategory[]
+  onCategoryChange: (categories: TNewsCategory[]) => void
 }
 
-const CategoryFilter: React.FC<CategoryFilterProps> = ({
+const CategoryFilter: React.FC<ICategoryFilterProps> = ({
   selectedCategories,
   onCategoryChange,
 }) => {
-  const toggleCategory = (category: Category) => {
+  const toggleCategory = (category: TNewsCategory) => {
     if (selectedCategories.includes(category)) {
       onCategoryChange(selectedCategories.filter(c => c !== category))
     } else {
@@ -34,33 +24,44 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" role="region" aria-label="Category filters">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Categories</h3>
         {selectedCategories.length > 0 && (
-          <button onClick={clearCategories} className="text-sm text-blue-500 hover:text-blue-600">
+          <button
+            onClick={clearCategories}
+            className="text-sm text-blue-500 hover:text-blue-600"
+            aria-label="Clear all selected categories"
+          >
             Clear all
           </button>
         )}
       </div>
-      <div className="flex flex-wrap gap-2">
-        {CATEGORIES.map(category => (
-          <button
-            key={category}
-            onClick={() => toggleCategory(category)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
-              ${
-                selectedCategories.includes(category)
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-          >
-            {category.charAt(0).toUpperCase() + category.slice(1)}
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Category options">
+        {CATEGORIES.map(category => {
+          const isSelected = selectedCategories.includes(category)
+          const categoryName = category.charAt(0).toUpperCase() + category.slice(1)
+          return (
+            <button
+              key={category}
+              onClick={() => toggleCategory(category)}
+              aria-pressed={isSelected}
+              aria-label={`${categoryName} category ${isSelected ? 'selected' : 'unselected'}`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
+                ${
+                  isSelected
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+            >
+              {categoryName}
+            </button>
+          )
+        })}
       </div>
     </div>
   )
 }
 
-export default CategoryFilter
+// Added React.memo() to prevent unnecessary re-renders when parent component updates with same props
+export default React.memo(CategoryFilter)

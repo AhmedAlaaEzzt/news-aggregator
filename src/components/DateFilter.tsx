@@ -1,12 +1,12 @@
 import React from 'react'
 
-interface DateFilterProps {
+interface IDateFilterProps {
   startDate: string
   endDate: string
   onDateChange: (startDate: string, endDate: string) => void
 }
 
-const DateFilter: React.FC<DateFilterProps> = ({ startDate, endDate, onDateChange }) => {
+const DateFilter: React.FC<IDateFilterProps> = ({ startDate, endDate, onDateChange }) => {
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newStartDate = e.target.value
     if (endDate && newStartDate > endDate) {
@@ -30,13 +30,15 @@ const DateFilter: React.FC<DateFilterProps> = ({ startDate, endDate, onDateChang
     const start = new Date()
     start.setDate(start.getDate() - days)
 
-    const formatDate = (date: Date) => date.toISOString().split('T')[0]
+    const formatDate = (date: Date): string => date.toISOString().split('T')[0]
     onDateChange(formatDate(start), formatDate(end))
   }
 
-  const QuickSelectButton = ({ days, label }: { days: number; label: string }) => (
+  const QuickSelectButton = React.memo(({ days, label }: { days: number; label: string }) => (
     <button
       onClick={() => handleQuickSelect(days)}
+      aria-label={`Select last ${label}`}
+      role="button"
       className={`px-3 py-1 text-sm rounded-full transition-colors whitespace-nowrap
         ${
           startDate ===
@@ -47,7 +49,7 @@ const DateFilter: React.FC<DateFilterProps> = ({ startDate, endDate, onDateChang
     >
       {label}
     </button>
-  )
+  ))
 
   return (
     <div className="bg-white p-4 rounded-lg shadow">
